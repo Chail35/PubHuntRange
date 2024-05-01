@@ -37,47 +37,49 @@ class GPUEngine
 
 public:
 
-	GPUEngine(int nbThreadGroup, int nbThreadPerGroup, int gpuId, uint32_t maxFound,
-		const uint32_t* hash160, int numHash160);
+    GPUEngine(int nbThreadGroup, int nbThreadPerGroup, int gpuId, uint32_t maxFound,
+              const uint32_t* hash160, int numHash160, uint64_t startRange, uint64_t endRange);
 
-	~GPUEngine();
+    ~GPUEngine();
 
-	bool Step(std::vector<ITEM>& dataFound, bool spinWait = false);
+    bool Step(std::vector<ITEM>& dataFound, bool spinWait = false);
 
-	int GetNbThread();
-	int GetGroupSize();
+    int GetNbThread();
+    int GetGroupSize();
 
-	std::string deviceName;
+    std::string deviceName;
 
-	static void PrintCudaInfo();
+    static void PrintCudaInfo();
 
 private:
 
-	bool Randomize();
-	bool CallKernel();
+    bool Randomize();
+    bool CallKernel();
 
-	int nbThread;
-	int nbThreadPerGroup;
-	int numHash160;
+    int nbThread;
+    int nbThreadPerGroup;
+    int numHash160;
 
-	uint32_t* inputHash;
-	uint32_t* inputHashPinned;
+    uint32_t* inputHash;
+    uint32_t* inputHashPinned;
 
-	uint64_t* inputKey;
+    uint64_t* inputKey;
 
-	uint32_t* outputBuffer;
-	uint32_t* outputBufferPinned;
+    uint32_t* outputBuffer;
+    uint32_t* outputBufferPinned;
 
-	bool initialised;
-	bool littleEndian;
+    bool initialised;
+    bool littleEndian;
 
-	uint32_t maxFound;
-	uint32_t outputSize;
+    uint32_t maxFound;
+    uint32_t outputSize;
 
-	// cuda-random
-	curandGenerator_t prngGPU;
-	cudaStream_t stream;
+    // cuda-random
+    curandGenerator_t prngGPU;
+    cudaStream_t stream;
 
+    uint64_t startRange;
+    uint64_t endRange;
 };
 
 #endif // GPUENGINEH
