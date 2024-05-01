@@ -31,11 +31,13 @@ using namespace std;
 
 // ----------------------------------------------------------------------------
 
-PubHunt::PubHunt(const std::vector<std::vector<uint8_t>>& inputHashes, const std::string& outputFile)
+PubHunt::PubHunt(const std::vector<std::vector<uint8_t>>& inputHashes, const std::string& outputFile, uint64_t startRange, uint64_t endRange)
 {
-	this->outputFile = outputFile;
-	this->nbGPUThread = 0;
-	this->maxFound = 65536;
+    this->outputFile = outputFile;
+    this->nbGPUThread = 0;
+    this->maxFound = 65536;
+    this->startRange = startRange;
+    this->endRange = endRange;
 
 	this->numHash160 = inputHashes.size();
 
@@ -149,7 +151,7 @@ void PubHunt::FindKeyGPU(TH_PARAM * ph)
 	// Global init
 	int thId = ph->threadId;
 
-	GPUEngine* g = new GPUEngine(ph->gridSizeX, ph->gridSizeY, ph->gpuId, maxFound, hash160, numHash160);
+	GPUEngine* g = new GPUEngine(ph->gridSizeX, ph->gridSizeY, ph->gpuId, maxFound, hash160, numHash160, startRange, endRange);
 
 	int nbThread = g->GetNbThread();
 
@@ -325,7 +327,7 @@ void PubHunt::Search(std::vector<int> gpuId, std::vector<int> gridSize, bool& sh
 
 		if (isAlive(params)) {
 			memset(timeStr, '\0', 256);
-			printf("\r[%s] [GPU: %.2f MH/s] [T: %s (%d bit)] [F: %d]  ",
+			printf("\r[%s] [GPU: %.2f MK/s] [T: %s (%d bit)] [F: %d]  ",
 				toTimeStr(t1, timeStr),
 				avgGpuKeyRate / 1000000.0,
 				formatThousands(count).c_str(),
@@ -388,6 +390,3 @@ char* PubHunt::toTimeStr(int sec, char* timeStr)
 }
 
 // ----------------------------------------------------------------------------
-
-
-
