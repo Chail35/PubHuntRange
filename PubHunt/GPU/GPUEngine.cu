@@ -100,12 +100,12 @@ inline void __cudaSafeCall(cudaError err, const char* file, const int line)
 
 // ---------------------------------------------------------------------------------------
 
-__global__ void compute_hash(uint64_t* keys, uint32_t* hash160, int numHash160, uint32_t maxFound, uint32_t* found)
+__global__ void compute_hash(uint64_t* keys, uint32_t* hash160, int numHash160, uint32_t maxFound, uint32_t* found, uint64_t startRange, uint64_t endRange)
 {
+    int id = (blockIdx.x * blockDim.x + threadIdx.x) * 4;
+    keys[id] = startRange + keys[id] % (endRange - startRange + 1);
 
-	int id = (blockIdx.x * blockDim.x + threadIdx.x) * 4;
-	ComputeHash(keys + id, hash160, numHash160, maxFound, found);
-
+    ComputeHash(keys + id, hash160, numHash160, maxFound, found);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -160,13 +160,14 @@ int _ConvertSMVer2Cores(int major, int minor)
 
 // ----------------------------------------------------------------------------
 
-GPUEngine::GPUEngine(int nbThreadGroup, int nbThreadPerGroup, int gpuId, uint32_t maxFound,
-	const uint32_t* hash160, int numHash160)
+GPUEngine::GPUEngine(int nbThreadGroup, int nbThreadPerGroup, int gpuId, uint32_t maxFound, const uint32_t* hash160, int numHash160, uint64_t startRange, uint64_t endRange)
 {
 
 	// Initialise CUDA
 	this->nbThreadPerGroup = nbThreadPerGroup;
 	this->numHash160 = numHash160;
+	this->startRange = startRange;
+    this->endRange = endRange;
 
 	initialised = false;
 
@@ -308,8 +309,8 @@ bool GPUEngine::CallKernel()
 	CudaSafeCall(cudaMemset(outputBuffer, 0, 4));
 
 	// Call the kernel (Perform STEP_SIZE keys per thread) 
-	compute_hash << < nbThread / nbThreadPerGroup, nbThreadPerGroup >> >
-		(inputKey, inputHash, numHash160, maxFound, outputBuffer);
+	compute_hash<<<nbThread / nbThreadPerGroup, nbThreadPerGroup>>>
+        (inputKey, inputHash, numHash160, maxFound, outputBuffer, startRange, endRange);
 
 	cudaError_t err = cudaGetLastError();
 	if (err != cudaSuccess) {
@@ -380,4 +381,3 @@ bool GPUEngine::Randomize()
 }
 
 // ----------------------------------------------------------------------------
-
