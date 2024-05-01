@@ -49,7 +49,7 @@ class PubHunt
 
 public:
 
-	PubHunt(const std::vector<std::vector<uint8_t>>& inputHashes, const std::string& outputFile);
+	PubHunt(const std::vector<std::vector<uint8_t>>& inputHashes, const std::string& outputFile, uint64_t startRange, uint64_t endRange);
 
 	~PubHunt();
 
@@ -63,7 +63,8 @@ private:
 
 	bool hasStarted(TH_PARAM* p);
 	uint64_t getGPUCount();
-
+	uint64_t startRange;
+	uint64_t endRange;
 	std::string formatThousands(uint64_t x);
 	char* toTimeStr(int sec, char* timeStr);
 
